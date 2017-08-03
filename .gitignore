@@ -15,6 +15,7 @@
 *.suo
 _ReSharper.*
 *.sln.cache
+*.user
 
 
 
