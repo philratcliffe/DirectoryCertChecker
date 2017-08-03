@@ -1,6 +1,3 @@
-packages
-Tests/bin/
-Tests/obj/
 *~      
 .*~         
 .gitignore~
@@ -14,27 +11,9 @@ Tests/obj/
 */*/*/*.pdb
 */*/*.bak
 */*.bak
-*.user
 *.suo
 _ReSharper.*
 *.sln.cache
-StyleCop.Cache
-Dotfuscated
-*.netlicproj
-CryptoObfuscator_Output
-CryptoObfuscator_Output/
-CryptoObfuscator_Output/*
-Utils/*.pdb
-Utils/*.dll
-Utils/System.Data.SQLite.xml
-Utils/Utils.dll.config
-CertCentre/*.pdb
-CertCentre/*.dll
-CertCentre/System.Data.SQLite.xml
-CertCentre/CertCentreLite.exe
-CertCentre/CertCentreLite.exe.config
-CertCentre/ccentre.db
-libs/cryptoblackbox
 
 
 
