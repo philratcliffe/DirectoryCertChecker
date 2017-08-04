@@ -18,19 +18,24 @@
 using System;
 using System.Configuration;
 using System.DirectoryServices;
-using System.Net.Configuration;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using log4net;
 
 namespace DirectoryCertChecker
 {
     internal class DirectoryCertChecker
     {
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private static void Main(string[] args)
         {
             var server = ConfigurationManager.AppSettings["server"];
             var baseDN = ConfigurationManager.AppSettings["baseDN"];
-            
+
+            log.Info("DirectoryCertChecker has started.");
+
             try
             {
                 var cp = new CertProcessor(server, baseDN);
