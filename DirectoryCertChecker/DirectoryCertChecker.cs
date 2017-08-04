@@ -1,6 +1,6 @@
 ﻿// Copyright © 2017 Phil Ratcliffe
 // 
-// This file is part of ExpiringCerts program.
+// This file is part of DirectoryCertChecker program.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,18 +26,18 @@ namespace DirectoryCertChecker
     {
         private static void Main(string[] args)
         {
-            // var server = "192.168.1.213";
             var server = ConfigurationManager.AppSettings["server"];
             var baseDN = ConfigurationManager.AppSettings["baseDN"];
 
-            // TODO
-            // Add logging
-            // Handle no server available exception
-            // Multiple search roots
-            // Page searches so can handle many results e.g., 10k plus
 
-            
-            var cp = new CertProcessor(server, baseDN);
+            try
+            {
+                var cp = new CertProcessor(server, baseDN);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("DEBUG " + ex);
+            }
         }
     }
 
@@ -56,17 +56,35 @@ namespace DirectoryCertChecker
         ///     The DN to start the search at.
         /// </param>
         public CertProcessor(string server, string baseDN)
+
+
         {
-            var searchRoot = new DirectoryEntry("LDAP://" + server + "/" + baseDN);
-            searchRoot.AuthenticationType = AuthenticationTypes.None;
+            using (var searchRoot = new DirectoryEntry("LDAP://" + server + "/" + baseDN))
+            {
+                searchRoot.AuthenticationType = AuthenticationTypes.None;
 
-            var findCerts = new DirectorySearcher(searchRoot);
-            findCerts.SearchScope = SearchScope.Subtree;
-            findCerts.Filter = "(userCertificate=*)";
-            findCerts.PropertiesToLoad.Add("userCertificate");
 
-            foreach (SearchResult result in findCerts.FindAll())
-                ProcessSearchResult(result);
+                using (var findCerts = new DirectorySearcher(searchRoot))
+                {
+                    findCerts.SearchScope = SearchScope.Subtree;
+                    findCerts.Filter = "(userCertificate=*)";
+                    findCerts.PropertiesToLoad.Add("userCertificate");
+
+                    //
+                    // If there is a possibility that Active Directory has more than 1000 entries with certificates, 
+                    // you must set PageSize to a non zero value, preferably 1000, otherwise DirectorySearcher.FindAll() only 
+                    // returns the first 1000 records and other entries will be missed without any warning.
+                    //
+                    findCerts.PageSize = 1000;
+
+                    using (var results = findCerts.FindAll())
+                    {
+                        Console.WriteLine($"DEBUG: Directory search returned {results.Count} directory entries.");
+                        foreach (SearchResult result in results)
+                            ProcessSearchResult(result);
+                    }
+                }
+            }
 
             Console.WriteLine("Founds " + certCount + " certs");
         }
@@ -83,6 +101,7 @@ namespace DirectoryCertChecker
         private void ProcessSearchResult(SearchResult result)
         {
             Console.WriteLine(result.Path);
+            Console.WriteLine("DEBUG: Number of certs in this entry: " + result.Properties["UserCertificate"].Count);
 
             // Intialise expiry date
             var latestExpiryDate = new DateTime(1970, 1, 1);
