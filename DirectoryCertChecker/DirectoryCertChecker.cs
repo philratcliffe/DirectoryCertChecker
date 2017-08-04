@@ -18,6 +18,7 @@
 using System;
 using System.Configuration;
 using System.DirectoryServices;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace DirectoryCertChecker
@@ -28,8 +29,7 @@ namespace DirectoryCertChecker
         {
             var server = ConfigurationManager.AppSettings["server"];
             var baseDN = ConfigurationManager.AppSettings["baseDN"];
-
-
+            
             try
             {
                 var cp = new CertProcessor(server, baseDN);
@@ -62,7 +62,6 @@ namespace DirectoryCertChecker
             using (var searchRoot = new DirectoryEntry("LDAP://" + server + "/" + baseDN))
             {
                 searchRoot.AuthenticationType = AuthenticationTypes.None;
-
 
                 using (var findCerts = new DirectorySearcher(searchRoot))
                 {
@@ -108,14 +107,20 @@ namespace DirectoryCertChecker
 
             var certificatesAsBytes = result.Properties["UserCertificate"];
             foreach (byte[] certificateBytes in certificatesAsBytes)
-            {
-                var certificate = new X509Certificate2(certificateBytes);
-                Console.WriteLine("DEBUG ----> " + certificate.NotAfter);
-                var difference = certificate.NotAfter - latestExpiryDate;
-                if (difference.TotalMilliseconds > 0)
-                    latestExpiryDate = certificate.NotAfter;
-                certCount += 1;
-            }
+                try
+                {
+                    var certificate = new X509Certificate2(certificateBytes);
+                    Console.WriteLine("DEBUG ----> " + certificate.NotAfter);
+                    var difference = certificate.NotAfter - latestExpiryDate;
+                    if (difference.TotalMilliseconds > 0)
+                        latestExpiryDate = certificate.NotAfter;
+                    certCount += 1;
+                }
+                catch (CryptographicException ce)
+                {
+                    Console.WriteLine("Cryptographic Exception: " + ce);
+                }
+            // TODO if latestExpiryDate 1970, message should state problem with certificate
             Console.WriteLine("CERTIFICATE EXPIRY: " + latestExpiryDate);
         }
     }
