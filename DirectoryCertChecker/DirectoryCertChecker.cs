@@ -18,6 +18,7 @@
 using System;
 using System.Configuration;
 using System.DirectoryServices;
+using System.Net.Configuration;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -78,7 +79,8 @@ namespace DirectoryCertChecker
 
                     using (var results = findCerts.FindAll())
                     {
-                        Console.WriteLine($"DEBUG: Directory search returned {results.Count} directory entries.");
+                        var msg = $"DEBUG: Directory search returned {results.Count} directory entries.";
+                        Console.WriteLine(msg);
                         foreach (SearchResult result in results)
                             ProcessSearchResult(result);
                     }
@@ -118,7 +120,7 @@ namespace DirectoryCertChecker
                 }
                 catch (CryptographicException ce)
                 {
-                    Console.WriteLine("Cryptographic Exception: " + ce);
+                    Console.WriteLine("There was a problem with this certificate attribure: " + ce);
                 }
             // TODO if latestExpiryDate 1970, message should state problem with certificate
             Console.WriteLine("CERTIFICATE EXPIRY: " + latestExpiryDate);
