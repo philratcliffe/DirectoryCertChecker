@@ -49,6 +49,8 @@ namespace DirectoryCertChecker
 
     internal class CertProcessor
     {
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private int certCount;
 
         /// <summary>
@@ -62,8 +64,6 @@ namespace DirectoryCertChecker
         ///     The DN to start the search at.
         /// </param>
         public CertProcessor(string server, string baseDN)
-
-
         {
             using (var searchRoot = new DirectoryEntry("LDAP://" + server + "/" + baseDN))
             {
@@ -84,8 +84,7 @@ namespace DirectoryCertChecker
 
                     using (var results = findCerts.FindAll())
                     {
-                        var msg = $"DEBUG: Directory search returned {results.Count} directory entries.";
-                        Console.WriteLine(msg);
+                        log.Debug($"Directory search returned {results.Count} directory entries.");
                         foreach (SearchResult result in results)
                             ProcessSearchResult(result);
                     }
