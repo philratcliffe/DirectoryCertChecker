@@ -19,6 +19,7 @@ using System;
 using System.Configuration;
 using System.DirectoryServices;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using log4net;
@@ -40,9 +41,16 @@ namespace DirectoryCertChecker
             {
                 var cp = new CertProcessor(server, baseDN);
             }
+            catch (COMException ce)
+            {
+
+                log.Info("It looks like there is a problem trying to connect to your LDAP server. Check the DirectoryCertChecker.log file for more details.");
+                log.Error("It looks like there is a problem trying to connect to your LDAP server.", ce);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine("DEBUG " + ex);
+                log.Info("There was an error. Check the DirectoryCertChecker.log file for more details.");
+                log.Error("App Error", ex);
             }
         }
     }
@@ -51,7 +59,7 @@ namespace DirectoryCertChecker
     {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private int certCount;
+        private int _certCount;
 
         /// <summary>
         ///     Searches Microsoft Active Directory for certificates in the userCertificate attribute.
@@ -91,7 +99,7 @@ namespace DirectoryCertChecker
                 }
             }
 
-            Console.WriteLine("Founds " + certCount + " certs");
+            Console.WriteLine("Founds " + _certCount + " certs");
         }
 
         /// <summary>
@@ -106,7 +114,7 @@ namespace DirectoryCertChecker
         private void ProcessSearchResult(SearchResult result)
         {
             Console.WriteLine(result.Path);
-            Console.WriteLine("DEBUG: Number of certs in this entry: " + result.Properties["UserCertificate"].Count);
+            log.Debug($"Number of certs in this entry: {result.Properties["UserCertificate"].Count}");
 
             // Intialise expiry date
             var latestExpiryDate = new DateTime(1970, 1, 1);
@@ -116,18 +124,19 @@ namespace DirectoryCertChecker
                 try
                 {
                     var certificate = new X509Certificate2(certificateBytes);
-                    Console.WriteLine("DEBUG ----> " + certificate.NotAfter);
+                    log.Debug(certificate.NotAfter);
                     var difference = certificate.NotAfter - latestExpiryDate;
                     if (difference.TotalMilliseconds > 0)
                         latestExpiryDate = certificate.NotAfter;
-                    certCount += 1;
+                    _certCount += 1;
                 }
                 catch (CryptographicException ce)
                 {
-                    Console.WriteLine("There was a problem with this certificate attribure: " + ce);
+                    Console.WriteLine("There was a problem with a certificate attribute.");
+                    log.Error("There was a problem with a certificate attribute.", ce);
                 }
             // TODO if latestExpiryDate 1970, message should state problem with certificate
-            Console.WriteLine("CERTIFICATE EXPIRY: " + latestExpiryDate);
+            Console.WriteLine($"CERTIFICATE EXPIRY: {latestExpiryDate}");
         }
     }
 }
