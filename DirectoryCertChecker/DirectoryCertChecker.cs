@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Configuration;
 using System.DirectoryServices;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -32,8 +31,8 @@ namespace DirectoryCertChecker
 
         private static void Main(string[] args)
         {
-            var server = ConfigurationManager.AppSettings["server"];
-            var baseDN = ConfigurationManager.AppSettings["baseDN"];
+            var server = Config.GetAppSetting("server");
+            var baseDN = Config.GetAppSetting("baseDN");
 
             log.Info("DirectoryCertChecker has started.");
 
@@ -43,9 +42,9 @@ namespace DirectoryCertChecker
             }
             catch (COMException ce)
             {
-
-                log.Info("It looks like there is a problem trying to connect to your LDAP server. Check the DirectoryCertChecker.log file for more details.");
-                log.Error("It looks like there is a problem trying to connect to your LDAP server.", ce);
+                var msg = $"There was a problem trying to connect to your LDAP server at {server}.";
+                Console.WriteLine($"{msg} See the DirectoryCertChecker.log file for more details.");
+                log.Error(msg, ce);
             }
             catch (Exception ex)
             {
