@@ -49,7 +49,7 @@ namespace DirectoryCertChecker
             catch (Exception ex)
             {
                 log.Info("There was an error. Check the DirectoryCertChecker.log file for more details.");
-                log.Error("App Error", ex);
+                log.Error("Top level exception caught. ", ex);
             }
         }
     }
@@ -74,8 +74,10 @@ namespace DirectoryCertChecker
         {
             using (var searchRoot = new DirectoryEntry("LDAP://" + server + "/" + baseDN))
             {
-                searchRoot.AuthenticationType = AuthenticationTypes.None;
-
+                searchRoot.AuthenticationType = AuthenticationTypes.None; // Use for Anonymous and Username+Password bind
+                searchRoot.Username = Config.GetAppSetting("ldapUsername", null);
+                searchRoot.Password = Config.GetAppSetting("ldapPassword", null);
+                
                 using (var findCerts = new DirectorySearcher(searchRoot))
                 {
                     findCerts.SearchScope = SearchScope.Subtree;
