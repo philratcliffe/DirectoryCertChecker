@@ -17,6 +17,7 @@
 
 using System;
 using System.DirectoryServices;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -56,6 +57,7 @@ namespace DirectoryCertChecker
 
     internal class CertProcessor
     {
+        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private int _certCount;
@@ -74,10 +76,11 @@ namespace DirectoryCertChecker
         {
             using (var searchRoot = new DirectoryEntry("LDAP://" + server + "/" + baseDN))
             {
-                searchRoot.AuthenticationType = AuthenticationTypes.None; // Use for Anonymous and Username+Password bind
+                searchRoot.AuthenticationType =
+                    AuthenticationTypes.None; // Use for Anonymous and Username+Password bind
                 searchRoot.Username = Config.GetAppSetting("ldapUsername", null);
                 searchRoot.Password = Config.GetAppSetting("ldapPassword", null);
-                
+
                 using (var findCerts = new DirectorySearcher(searchRoot))
                 {
                     findCerts.SearchScope = SearchScope.Subtree;
@@ -100,7 +103,7 @@ namespace DirectoryCertChecker
                 }
             }
 
-            Console.WriteLine("Founds " + _certCount + " certs");
+            Console.WriteLine("Found " + _certCount + " certs");
         }
 
         /// <summary>
@@ -114,11 +117,13 @@ namespace DirectoryCertChecker
         /// </param>
         private void ProcessSearchResult(SearchResult result)
         {
-            Console.WriteLine(result.Path);
-            log.Debug($"Number of certs in this entry: {result.Properties["UserCertificate"].Count}");
+            var distinguisjedName = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
+            log.Debug($"{distinguisjedName} has: {result.Properties["UserCertificate"].Count} certs.");
+            Console.Write($"{distinguisjedName}");
+
 
             // Intialise expiry date
-            var latestExpiryDate = new DateTime(1970, 1, 1);
+            var latestExpiryDate = epoch;
 
             var certificatesAsBytes = result.Properties["UserCertificate"];
             foreach (byte[] certificateBytes in certificatesAsBytes)
@@ -136,8 +141,15 @@ namespace DirectoryCertChecker
                     Console.WriteLine("There was a problem with a certificate attribute.");
                     log.Error("There was a problem with a certificate attribute.", ce);
                 }
-            // TODO if latestExpiryDate 1970, message should state problem with certificate
-            Console.WriteLine($"CERTIFICATE EXPIRY: {latestExpiryDate}");
+            if (epoch >= latestExpiryDate)
+            {
+                Console.WriteLine($"ERROR: Certificate Expiry is invalid: {latestExpiryDate}");
+                log.Error($"The latest expiry date is invalid for {result.Path}. ");
+            }
+            else
+            {
+                Console.WriteLine($" (Expires: {latestExpiryDate.ToShortDateString()})");
+            }
         }
     }
 }
