@@ -28,53 +28,74 @@ namespace DirectoryCertChecker
 {
     internal class DirectoryCertChecker
     {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private static void Main(string[] args)
         {
-            var server = Config.GetAppSetting("server");
-            var baseDN = Config.GetAppSetting("baseDN");
+            if (args.Length > 0)
+            {
+                Log.Warn("Unexpected argument passed.");
+                Console.WriteLine("This program does not expect any arguments");
+            }
 
-            log.Info("DirectoryCertChecker has started.");
+            var server = Config.GetAppSetting("server");
+            var baseDn = Config.GetAppSetting("baseDn");
+
+
+            Log.Info("DirectoryCertChecker has started.");
 
             try
             {
-                var cp = new CertProcessor(server, baseDN);
+                var cp = new CertProcessor(server, baseDn);
+                cp.ProcessCerts();
             }
             catch (COMException ce)
             {
                 var msg = $"There was a problem trying to connect to your LDAP server at {server}.";
                 Console.WriteLine($"{msg} See the DirectoryCertChecker.log file for more details.");
-                log.Error(msg, ce);
+                Log.Error(msg, ce);
             }
             catch (Exception ex)
             {
-                log.Info("There was an error. Check the DirectoryCertChecker.log file for more details.");
-                log.Error("Top level exception caught. ", ex);
+                Log.Info("There was an error. Check the DirectoryCertChecker.log file for more details.");
+                Log.Error("Top level exception caught. ", ex);
             }
         }
     }
 
     internal class CertProcessor
     {
-        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly string _baseDn;
+        private readonly string _server;
 
         private int _certCount;
 
         /// <summary>
-        ///     Searches Microsoft Active Directory for certificates in the userCertificate attribute.
+        ///     Class constructor.
         /// </summary>
         /// <param name="server">
         ///     The server to search.
         /// </param>
         /// ///
-        /// <param name="baseDN">
+        /// <param name="baseDn">
         ///     The DN to start the search at.
         /// </param>
-        public CertProcessor(string server, string baseDN)
+        public CertProcessor(string server, string baseDn)
         {
-            using (var searchRoot = new DirectoryEntry("LDAP://" + server + "/" + baseDN))
+            _server = server;
+            _baseDn = baseDn;
+            _certCount = 0;
+        }
+
+        /// <summary>
+        ///     Searches Microsoft Active Directory for certificates in the userCertificate attribute and processes them.
+        /// </summary>
+        
+        internal void ProcessCerts()
+        {
+            using (var searchRoot = new DirectoryEntry("LDAP://" + _server + "/" + _baseDn))
             {
                 searchRoot.AuthenticationType =
                     AuthenticationTypes.None; // Use for Anonymous and Username+Password bind
@@ -96,7 +117,7 @@ namespace DirectoryCertChecker
 
                     using (var results = findCerts.FindAll())
                     {
-                        log.Debug($"Directory search returned {results.Count} directory entries.");
+                        Log.Debug($"Directory search returned {results.Count} directory entries.");
                         foreach (SearchResult result in results)
                             ProcessSearchResult(result);
                     }
@@ -118,19 +139,19 @@ namespace DirectoryCertChecker
         private void ProcessSearchResult(SearchResult result)
         {
             var distinguisjedName = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
-            log.Debug($"{distinguisjedName} has: {result.Properties["UserCertificate"].Count} certs.");
+            Log.Debug($"{distinguisjedName} has: {result.Properties["UserCertificate"].Count} certs.");
             Console.Write($"{distinguisjedName}");
 
 
             // Intialise expiry date
-            var latestExpiryDate = epoch;
+            var latestExpiryDate = Epoch;
 
             var certificatesAsBytes = result.Properties["UserCertificate"];
             foreach (byte[] certificateBytes in certificatesAsBytes)
                 try
                 {
                     var certificate = new X509Certificate2(certificateBytes);
-                    log.Debug(certificate.NotAfter);
+                    Log.Debug(certificate.NotAfter);
                     var difference = certificate.NotAfter - latestExpiryDate;
                     if (difference.TotalMilliseconds > 0)
                         latestExpiryDate = certificate.NotAfter;
@@ -139,12 +160,12 @@ namespace DirectoryCertChecker
                 catch (CryptographicException ce)
                 {
                     Console.WriteLine("There was a problem with a certificate attribute.");
-                    log.Error("There was a problem with a certificate attribute.", ce);
+                    Log.Error("There was a problem with a certificate attribute.", ce);
                 }
-            if (epoch >= latestExpiryDate)
+            if (Epoch >= latestExpiryDate)
             {
                 Console.WriteLine($"ERROR: Certificate Expiry is invalid: {latestExpiryDate}");
-                log.Error($"The latest expiry date is invalid for {result.Path}. ");
+                Log.Error($"The latest expiry date is invalid for {result.Path}. ");
             }
             else
             {
