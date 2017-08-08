@@ -39,7 +39,7 @@ namespace DirectoryCertChecker
             }
 
             var server = Config.GetAppSetting("server");
-            var baseDn = Config.GetAppSetting("baseDn");
+            var baseDn = Config.GetAppSetting("searchBaseDn");
 
 
             Log.Info("DirectoryCertChecker has started.");
@@ -67,7 +67,7 @@ namespace DirectoryCertChecker
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly string _baseDn;
+        private readonly string _searchBaseDn;
         private readonly string _server;
 
         private int _certCount;
@@ -79,30 +79,29 @@ namespace DirectoryCertChecker
         ///     The server to search.
         /// </param>
         /// ///
-        /// <param name="baseDn">
-        ///     The DN to start the search at.
+        /// <param name="searchBaseDn">
+        ///     The DN of the entry where you would like the search to begin. An empty string equals root.
         /// </param>
-        public CertProcessor(string server, string baseDn)
+        internal CertProcessor(string server, string searchBaseDn)
         {
             _server = server;
-            _baseDn = baseDn;
+            _searchBaseDn = searchBaseDn;
             _certCount = 0;
         }
 
         /// <summary>
         ///     Searches Microsoft Active Directory for certificates in the userCertificate attribute and processes them.
         /// </summary>
-        
         internal void ProcessCerts()
         {
-            using (var searchRoot = new DirectoryEntry("LDAP://" + _server + "/" + _baseDn))
+            using (var searchBaseEntry = new DirectoryEntry("LDAP://" + _server + "/" + _searchBaseDn))
             {
-                searchRoot.AuthenticationType =
-                    AuthenticationTypes.None; // Use for Anonymous and Username+Password bind
-                searchRoot.Username = Config.GetAppSetting("ldapUsername", null);
-                searchRoot.Password = Config.GetAppSetting("ldapPassword", null);
+                searchBaseEntry.AuthenticationType =
+                    AuthenticationTypes.None; // Use this setting for anonymous simple authentication and simple authentication
+                searchBaseEntry.Username = Config.GetAppSetting("ldapUsername", null);
+                searchBaseEntry.Password = Config.GetAppSetting("ldapPassword", null);
 
-                using (var findCerts = new DirectorySearcher(searchRoot))
+                using (var findCerts = new DirectorySearcher(searchBaseEntry))
                 {
                     findCerts.SearchScope = SearchScope.Subtree;
                     findCerts.Filter = "(userCertificate=*)";
@@ -128,7 +127,7 @@ namespace DirectoryCertChecker
         }
 
         /// <summary>
-        ///     Takes an Active Directory search result and writes out the certificate expiry information.
+        ///     Takes the search result for a specific Active Directory entry and writes out the certificate expiry information.
         ///     If an entry has multiple certificate entries (I assume this is because old certs are sometimes
         ///     left in the directory entry), it writes out only the most recent expiry date.
         /// </summary>
