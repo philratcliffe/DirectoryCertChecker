@@ -52,7 +52,11 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="DirectoryCertChecker.cs" />
+    <Compile Include="DirectoryCertSearcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReportRecord.cs" />
+    <Compile Include="ReportWriter.cs" />
+    <Compile Include="SearchResultProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

@@ -23,8 +23,6 @@ namespace DirectoryCertChecker
 {
     internal class Config
     {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         public static string GetAppSetting(string key)
         {
             var value = ConfigurationManager.AppSettings[key];
