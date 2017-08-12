@@ -1,4 +1,5 @@
-﻿// Copyright © 2017 Phil Ratcliffe
+﻿#region Copyright and license information
+// Copyright © 2017 Phil Ratcliffe
 // 
 // This file is part of DirectoryCertChecker program.
 // 
@@ -14,6 +15,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#endregion
 
 using System;
 using System.DirectoryServices;
@@ -30,6 +32,17 @@ namespace DirectoryCertChecker
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+
+        /// <summary>
+        ///     Takes the search result for a specific Active Directory entry and returns the userCertificate 
+        ///     attribute value of the entry. If an entry has multiple certificate entries (presumably this is 
+        ///     because old certs are sometimes left in the directory entry), it reurns the one with the most
+        ///     recent expiry date.
+        /// </summary>
+        /// <param name="result">
+        ///     The result param encapsulates a node in the Active Directory Domain Services hierarchy
+        ///     that is returned during a search using .NET's DirectorySearcher.
+        /// </param>
         public X509Certificate2 GetCertificate(SearchResult result)
         {
             var numberOfCerts = result.Properties["UserCertificate"].Count;

@@ -1,4 +1,5 @@
-﻿// Copyright © 2017 Phil Ratcliffe
+﻿#region Copyright and license information
+// Copyright © 2017 Phil Ratcliffe
 // 
 // This file is part of DirectoryCertChecker program.
 // 
@@ -14,6 +15,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#endregion
 
 using System.Collections.Generic;
 using System.DirectoryServices;
@@ -22,6 +24,17 @@ namespace DirectoryCertChecker
 {
     internal class DirectoryCertSearcher
     {
+
+        /// <summary>
+        ///     Searches Microsoft Active Directory for entries with a userCertificate attribute.
+        /// </summary>
+        /// <param name="server">
+        ///     The server to search.
+        /// </param>
+        /// ///
+        /// <param name="searchBase">
+        ///     The DN of the entry where you would like the search to begin. An empty string equals root.
+        /// </param>
         public IEnumerable<SearchResult> Search(string server, string searchBase)
         {
             using (var searchBaseEntry = new DirectoryEntry("LDAP://" + server + "/" + searchBase))

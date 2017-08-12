@@ -1,3 +1,4 @@
+#region Copyright and license information
 // Copyright © 2017 Phil Ratcliffe
 // 
 // This file is part of DirectoryCertChecker program.
@@ -14,6 +15,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#endregion
 
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -22,6 +24,9 @@ using CsvHelper;
 
 namespace DirectoryCertChecker
 {
+    /// <summary>
+    ///     Provides a set of methods for deleting and creating reports.
+    /// </summary>
     internal class ReportWriter
     {
         private static readonly string reportFilename = @"certificates.csv";
