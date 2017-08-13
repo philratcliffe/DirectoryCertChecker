@@ -27,5 +27,6 @@ namespace DirectoryCertChecker
         public string CertificateDn { get; set; }
         public string SerialNumber { get; set; }
         public string ExpiryDate { get; set; }
+        public string Status { get; set; }
     }
 }

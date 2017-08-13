@@ -17,6 +17,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endregion
 
+using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -69,6 +70,8 @@ namespace DirectoryCertChecker
                 record.CertificateDn = cert.Subject;
                 record.SerialNumber = cert.SerialNumber;
                 record.ExpiryDate = cert.NotAfter.ToShortDateString();
+                if (cert.NotAfter.ToUniversalTime() < DateTime.UtcNow)
+                    record.Status = "EXPIRED";
             }
 
             WriteRecord(record);
