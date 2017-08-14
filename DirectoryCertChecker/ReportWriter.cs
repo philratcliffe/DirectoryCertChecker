@@ -32,6 +32,8 @@ namespace DirectoryCertChecker
     {
         private static readonly string reportFilename = @"certificates.csv";
 
+        
+
         internal void RemoveReportFile()
         {
             // Remove any previous results
@@ -67,11 +69,18 @@ namespace DirectoryCertChecker
             };
             if (cert != null)
             {
+                int daysToExpiry = cert.NotAfter.ToUniversalTime().Subtract(DateTime.UtcNow).Days;
+
                 record.CertificateDn = cert.Subject;
                 record.SerialNumber = cert.SerialNumber;
                 record.ExpiryDate = cert.NotAfter.ToShortDateString();
-                if (cert.NotAfter.ToUniversalTime() < DateTime.UtcNow)
-                    record.Status = "EXPIRED";
+                if (daysToExpiry < 0)
+                    record.ExpiryStatus = "EXPIRED";
+                else if (daysToExpiry < 90)
+                    record.ExpiryStatus = "EXPIRING";
+                else
+                    record.ExpiryStatus = "OK";
+                
             }
 
             WriteRecord(record);

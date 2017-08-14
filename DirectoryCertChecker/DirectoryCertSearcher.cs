@@ -55,6 +55,7 @@ namespace DirectoryCertChecker
                     // returns the first 1000 records and other entries will be missed without any warning.
                     //
 #if DEBUG
+                    // Just find the first 1000 in debug for now
                     findCerts.PageSize = 0;
 #else
                     findCerts.PageSize = 1000;
