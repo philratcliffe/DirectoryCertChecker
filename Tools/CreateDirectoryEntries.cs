@@ -19,11 +19,9 @@ namespace CreateTestDirectoryEntries
         
         private static void Main(string[] args)
         {
-            DirectoryEntry rootEntry =
-                new DirectoryEntry(
-                    "LDAP://192.168.1.213/OU = Test, OU = Research, O = Acme Test");
-            rootEntry.Username = "CN=admin1, OU = Research, O = Acme Test";
-            rootEntry.Password = "admin1 password here";
+            var rootEntry = new DirectoryEntry("LDAP://192.168.1.230/O=Red Kestrel");
+            rootEntry.Username = "CN=admin,O=Red Kestrel";
+            rootEntry.Password = "Top111Secret";
             rootEntry.AuthenticationType = AuthenticationTypes.None;
 
             for (var i = 0; i < 1; i++)
