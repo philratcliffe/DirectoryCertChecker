@@ -19,31 +19,50 @@ namespace CreateTestDirectoryEntries
         
         private static void Main(string[] args)
         {
-            var rootEntry = new DirectoryEntry("LDAP://192.168.1.230/O=Red Kestrel");
+            const int maxValidityDays = 365;
+            const int warningPeriodInDays = 90;
+            const int numberOfCertsToWrite = 100;
+
+            int certCount = 0;
+            int expiringCertCount = 0;
+
+            var rootEntry = new DirectoryEntry("LDAP://192.168.1.230/OU=Test Users,O=Red Kestrel");
             rootEntry.Username = "CN=admin,O=Red Kestrel";
             rootEntry.Password = "Top111Secret";
             rootEntry.AuthenticationType = AuthenticationTypes.None;
 
-            for (var i = 0; i < 1; i++)
+            for (var i = 0; i < numberOfCertsToWrite; i++)
                 try
                 {
                     var name = GenerateRandomName();
 
-                    var cert = GenerateSelfSignedCertificate(name, name);
+                    Random r = new Random();
+                    int validityPeriodInDays = r.Next(0, maxValidityDays);
+                    
+                    
+
+                    var cert = GenerateSelfSignedCertificate(name, name, validityPeriodInDays);
                     var data = cert.RawData;
 
                     var userEntry = rootEntry.Children.Add($"CN=Test--{name}-{i}", "user");
                     userEntry.Properties["userCertificate"].Insert(0, data);
                     userEntry.CommitChanges();
                     rootEntry.CommitChanges();
+                    certCount += 1;
+                    if (validityPeriodInDays <= warningPeriodInDays)
+                    {
+                        expiringCertCount += 1;
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                 }
+                Console.WriteLine($"Wrote {certCount} certs to AD");
+                Console.WriteLine($"Number of certs with validity period greater than 0 and <= {warningPeriodInDays} is {expiringCertCount} (EXPIRING CERTS)");
         }
 
-        public static X509Certificate2 GenerateSelfSignedCertificate(string subjectName, string issuerName)
+        public static X509Certificate2 GenerateSelfSignedCertificate(string subjectName, string issuerName, int validityPeriodInDays)
 
         {
             const string signatureAlgorithm = "SHA256withRSA";
@@ -74,12 +93,8 @@ namespace CreateTestDirectoryEntries
             certificateGenerator.SetIssuerDN(issuerDn);
             certificateGenerator.SetSubjectDN(subjectDn);
 
-
-            var r = new Random();
-            var rInt = r.Next(0, 100);
-
             var notBefore = DateTime.UtcNow.Date;
-            var notAfter = notBefore.AddDays(rInt);
+            var notAfter = notBefore.AddDays(validityPeriodInDays);
             certificateGenerator.SetNotBefore(notBefore);
             certificateGenerator.SetNotAfter(notAfter);
             
