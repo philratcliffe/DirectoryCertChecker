@@ -1,4 +1,5 @@
 ﻿#region Copyright and license information
+
 // Copyright © 2017 Phil Ratcliffe
 // 
 // This file is part of DirectoryCertChecker program.
@@ -15,20 +16,25 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #endregion
 
 using System.Configuration;
+using System.Globalization;
 using System.Reflection;
 using log4net;
 
 namespace DirectoryCertChecker
 {
-
     /// <summary>
     ///     A wrapper around ConfigurationManager that provides methods for getting configuration information.
     /// </summary>
     internal class Config
+
+
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public static string GetAppSetting(string key)
         {
             var value = ConfigurationManager.AppSettings[key];
@@ -42,6 +48,19 @@ namespace DirectoryCertChecker
         public static string GetAppSetting(string key, string defaultValue)
         {
             return ConfigurationManager.AppSettings[key] ?? defaultValue;
+        }
+
+        public static int GetIntAppSetting(string key, int defaultValue)
+        {
+            int i;
+
+            if (!int.TryParse(GetAppSetting(key, defaultValue.ToString(CultureInfo.InvariantCulture)), out i))
+            {
+                Log.Error(key + " value is not a valid integer.");
+                return defaultValue;
+            }
+
+            return i;
         }
 
         public static bool GetBoolAppSetting(string key)

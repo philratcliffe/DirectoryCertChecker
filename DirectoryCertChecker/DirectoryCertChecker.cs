@@ -1,4 +1,5 @@
 ﻿#region Copyright and license information
+
 // Copyright © 2017 Phil Ratcliffe
 // 
 // This file is part of DirectoryCertChecker program.
@@ -15,6 +16,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #endregion
 
 using System;
@@ -24,15 +26,15 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using log4net;
 
-
 namespace DirectoryCertChecker
 {
     internal class DirectoryCertChecker
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        
+
         private static void Main(string[] args)
         {
+            var defaultWarningPeriod = 90;
             try
             {
                 if (args.Length > 0)
@@ -45,9 +47,10 @@ namespace DirectoryCertChecker
 
                 var server = Config.GetAppSetting("server");
                 var baseDn = Config.GetAppSetting("searchBaseDn");
-                var reportWriter = new ReportWriter();
+                var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriod);
+                var reportWriter = new ReportWriter(warningPeriodInDays);
                 var certCount = 0;
-                     
+
 
                 reportWriter.RemoveReportFile();
                 reportWriter.WriteHeader();
@@ -71,7 +74,6 @@ namespace DirectoryCertChecker
                         {
                             Log.Error($"There was a problem getting a certificate for {entryDn}");
                         }
-                        
                     }
                     Console.WriteLine($"There were {certCount} certs written to the report.");
                 }
@@ -81,7 +83,6 @@ namespace DirectoryCertChecker
                     Console.WriteLine($"{msg} See the DirectoryCertChecker.log file for more details.");
                     Log.Error(msg, ce);
                 }
-                
             }
             catch (ConfigurationErrorsException cee)
             {

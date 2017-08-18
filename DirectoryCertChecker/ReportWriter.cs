@@ -1,4 +1,5 @@
 #region Copyright and license information
+
 // Copyright © 2017 Phil Ratcliffe
 // 
 // This file is part of DirectoryCertChecker program.
@@ -15,6 +16,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #endregion
 
 using System;
@@ -30,19 +32,23 @@ namespace DirectoryCertChecker
     /// </summary>
     internal class ReportWriter
     {
-        private static readonly string reportFilename = @"certificates.csv";
+        private const string ReportFilename = @"certificates.csv";
+        private readonly int _warningPeriodInDays;
 
-        
+        internal ReportWriter(int warningPeriodInDays)
+        {
+            _warningPeriodInDays = warningPeriodInDays;
+        }
 
         internal void RemoveReportFile()
         {
             // Remove any previous results
-            File.Delete(reportFilename);
+            File.Delete(ReportFilename);
         }
 
         internal void WriteHeader()
         {
-            using (TextWriter writer = new StreamWriter(reportFilename, true))
+            using (TextWriter writer = new StreamWriter(ReportFilename, true))
             {
                 var csv = new CsvWriter(writer);
                 csv.Configuration.Encoding = Encoding.UTF8;
@@ -52,7 +58,7 @@ namespace DirectoryCertChecker
 
         internal void WriteRecord(ReportRecord record)
         {
-            using (TextWriter writer = new StreamWriter(reportFilename, true))
+            using (TextWriter writer = new StreamWriter(ReportFilename, true))
             {
                 var csv = new CsvWriter(writer);
                 csv.Configuration.Encoding = Encoding.UTF8;
@@ -69,18 +75,17 @@ namespace DirectoryCertChecker
             };
             if (cert != null)
             {
-                int daysToExpiry = cert.NotAfter.ToUniversalTime().Subtract(DateTime.UtcNow).Days;
+                var daysToExpiry = cert.NotAfter.ToUniversalTime().Subtract(DateTime.UtcNow).Days;
 
                 record.CertificateDn = cert.Subject;
                 record.SerialNumber = cert.SerialNumber;
                 record.ExpiryDate = cert.NotAfter.ToShortDateString();
                 if (daysToExpiry < 0)
                     record.ExpiryStatus = "EXPIRED";
-                else if (daysToExpiry < 90)
+                else if (daysToExpiry < _warningPeriodInDays)
                     record.ExpiryStatus = "EXPIRING";
                 else
                     record.ExpiryStatus = "OK";
-                
             }
 
             WriteRecord(record);
