@@ -30,12 +30,10 @@ namespace DirectoryCertChecker
     ///     A wrapper around ConfigurationManager that provides methods for getting configuration information.
     /// </summary>
     internal class Config
-
-
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static string GetAppSetting(string key)
+        internal static string GetAppSetting(string key)
         {
             var value = ConfigurationManager.AppSettings[key];
 
@@ -45,12 +43,12 @@ namespace DirectoryCertChecker
             return value;
         }
 
-        public static string GetAppSetting(string key, string defaultValue)
+        internal static string GetAppSetting(string key, string defaultValue)
         {
             return ConfigurationManager.AppSettings[key] ?? defaultValue;
         }
 
-        public static int GetIntAppSetting(string key, int defaultValue)
+        internal static int GetIntAppSetting(string key, int defaultValue)
         {
             int i;
 
@@ -63,7 +61,7 @@ namespace DirectoryCertChecker
             return i;
         }
 
-        public static bool GetBoolAppSetting(string key)
+        internal static bool GetBoolAppSetting(string key)
         {
             var value = ConfigurationManager.AppSettings[key];
             if (!string.IsNullOrEmpty(value))
