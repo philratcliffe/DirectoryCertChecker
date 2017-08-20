@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Certificate.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DirectoryCertChecker.cs" />
     <Compile Include="DirectoryCertSearcher.cs" />

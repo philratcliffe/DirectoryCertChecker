@@ -49,8 +49,7 @@ namespace DirectoryCertChecker
                 var baseDn = Config.GetAppSetting("searchBaseDn");
                 var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriod);
                 var reportWriter = new ReportWriter(warningPeriodInDays);
-                var certCount = 0;
-
+                
 
                 reportWriter.RemoveReportFile();
                 reportWriter.WriteHeader();
@@ -68,14 +67,14 @@ namespace DirectoryCertChecker
                         if (cert != null)
                         {
                             reportWriter.WriteRecord(entryDn, cert);
-                            certCount += 1;
+                            
                         }
                         else
                         {
                             Log.Error($"There was a problem getting a certificate for {entryDn}");
                         }
                     }
-                    Console.WriteLine($"There were {certCount} certs written to the report.");
+                    Console.WriteLine($"There were {reportWriter.CertsWritten} certs written to the report.");
                 }
                 catch (COMException ce)
                 {

@@ -34,6 +34,9 @@ namespace DirectoryCertChecker
     {
         private const string ReportFilename = @"certificates.csv";
         private readonly int _warningPeriodInDays;
+        public int CertsWritten { get; private set; } = 0;
+
+        
 
         internal ReportWriter(int warningPeriodInDays)
         {
@@ -89,6 +92,9 @@ namespace DirectoryCertChecker
             }
 
             WriteRecord(record);
+            if (cert != null)
+                CertsWritten += 1;
+
         }
     }
 }
