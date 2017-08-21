@@ -32,24 +32,18 @@ namespace DirectoryCertChecker
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             var defaultWarningPeriod = 90;
             try
             {
-                if (args.Length > 0)
-                {
-                    Log.Warn("Unexpected argument passed.");
-                    Console.WriteLine("This program does not expect any arguments.");
-                }
-
                 Log.Info("DirectoryCertChecker has started.");
 
                 var server = Config.GetAppSetting("server");
                 var baseDn = Config.GetAppSetting("searchBaseDn");
                 var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriod);
                 var reportWriter = new ReportWriter(warningPeriodInDays);
-                
+
 
                 reportWriter.RemoveReportFile();
                 reportWriter.WriteHeader();
@@ -65,16 +59,13 @@ namespace DirectoryCertChecker
                         var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
 
                         if (cert != null)
-                        {
                             reportWriter.WriteRecord(entryDn, cert);
-                            
-                        }
                         else
-                        {
                             Log.Error($"There was a problem getting a certificate for {entryDn}");
-                        }
                     }
-                    Console.WriteLine($"There were {reportWriter.CertsWritten} certs written to the report.");
+                    Console.WriteLine($"{reportWriter.CertsWritten} certs written to the report.");
+                    Console.WriteLine($"{reportWriter.ExpiredCerts} EXPIRED certs.");
+                    Console.WriteLine($"{reportWriter.ExpiringCerts} EXPIRING certs.");
                 }
                 catch (COMException ce)
                 {

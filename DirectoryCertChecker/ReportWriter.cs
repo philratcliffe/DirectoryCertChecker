@@ -35,8 +35,10 @@ namespace DirectoryCertChecker
         private const string ReportFilename = @"certificates.csv";
         private readonly int _warningPeriodInDays;
         public int CertsWritten { get; private set; } = 0;
+        public int ExpiredCerts { get; private set; } = 0;
+        public int ExpiringCerts { get; private set; } = 0;
 
-        
+
 
         internal ReportWriter(int warningPeriodInDays)
         {
@@ -79,14 +81,20 @@ namespace DirectoryCertChecker
             if (cert != null)
             {
                 var daysToExpiry = cert.NotAfter.ToUniversalTime().Subtract(DateTime.UtcNow).Days;
-
+                
                 record.CertificateDn = cert.Subject;
                 record.SerialNumber = cert.SerialNumber;
                 record.ExpiryDate = cert.NotAfter.ToShortDateString();
-                if (daysToExpiry < 0)
+                if (cert.NotAfter.ToUniversalTime() < DateTime.UtcNow)
+                { 
                     record.ExpiryStatus = "EXPIRED";
-                else if (daysToExpiry < _warningPeriodInDays)
+                    ExpiredCerts += 1;
+                }
+                else if (daysToExpiry <= _warningPeriodInDays)
+                { 
+                    ExpiringCerts += 1;
                     record.ExpiryStatus = "EXPIRING";
+                }
                 else
                     record.ExpiryStatus = "OK";
             }
