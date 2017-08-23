@@ -34,14 +34,14 @@ namespace DirectoryCertChecker
 
         private static void Main()
         {
-            var defaultWarningPeriod = 90;
+            const int defaultWarningPeriodInDays = 90;
             try
             {
                 Log.Info("DirectoryCertChecker has started.");
 
                 var server = Config.GetAppSetting("server");
                 var baseDn = Config.GetAppSetting("searchBaseDn");
-                var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriod);
+                var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriodInDays);
                 var reportWriter = new ReportWriter(warningPeriodInDays);
 
 

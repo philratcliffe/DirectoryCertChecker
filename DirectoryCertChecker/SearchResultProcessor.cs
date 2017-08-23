@@ -54,7 +54,6 @@ namespace DirectoryCertChecker
 
             Console.Write($"{entryDn}");
 
-            // Intialise expiry date
             var latestExpiryDate = Epoch;
 
             var certificatesAsBytes = result.Properties["UserCertificate"];
