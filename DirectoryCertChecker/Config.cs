@@ -19,6 +19,8 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.Reflection;
@@ -32,6 +34,8 @@ namespace DirectoryCertChecker
     internal class Config
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly char ConfigItemSeparator = ';'; 
+        
 
         internal static string GetAppSetting(string key)
         {
@@ -68,6 +72,17 @@ namespace DirectoryCertChecker
                 return bool.Parse(value);
 
             return false;
+        }
+
+        public static List<string> GetListAppSetting(string key)
+        {
+            String value = GetAppSetting(key, "");
+            if (!string.IsNullOrEmpty(value))
+            {
+                return new List<string>(value.Split(ConfigItemSeparator));
+            }
+
+            return new List<string>();
         }
     }
 }
