@@ -21,6 +21,7 @@
 
 using System;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -40,39 +41,45 @@ namespace DirectoryCertChecker
                 Log.Info("DirectoryCertChecker has started.");
 
                 var server = Config.GetAppSetting("server");
-                var baseDn = Config.GetAppSetting("searchBaseDn");
+                var baseDNs = Config.GetListAppSetting("searchBaseDNs");
                 var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriodInDays);
                 var reportWriter = new ReportWriter(warningPeriodInDays);
-
 
                 reportWriter.RemoveReportFile();
                 reportWriter.WriteHeader();
 
-                try
+                foreach (string baseDn in baseDNs)
                 {
-                    var directoryCertSearcher = new DirectoryCertSearcher();
-                    var searchResultProcessor = new SearchResultProcessor();
-
-                    foreach (var result in directoryCertSearcher.Search(server, baseDn))
+                    try
                     {
-                        var cert = searchResultProcessor.GetCertificate(result);
-                        var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
+                        
 
-                        if (cert != null)
-                            reportWriter.WriteRecord(entryDn, cert);
-                        else
-                            Log.Error($"There was a problem getting a certificate for {entryDn}");
+
+                        var directoryCertSearcher = new DirectoryCertSearcher();
+                        var searchResultProcessor = new SearchResultProcessor();
+
+                        foreach (var result in directoryCertSearcher.Search(server, baseDn))
+                        {
+                            var cert = searchResultProcessor.GetCertificate(result);
+                            var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
+
+                            if (cert != null)
+                                reportWriter.WriteRecord(entryDn, cert);
+                            else
+                                Log.Error($"There was a problem getting a certificate for {entryDn}");
+                        }
+                
                     }
-                    Console.WriteLine($"{reportWriter.CertsWritten} certs written to the report.");
-                    Console.WriteLine($"{reportWriter.ExpiredCerts} EXPIRED certs.");
-                    Console.WriteLine($"{reportWriter.ExpiringCerts} EXPIRING certs.");
+                    catch (COMException ce)
+                    {
+                        var msg = $"There was a problem trying to connect to your LDAP server at {server}.";
+                        Console.WriteLine($"{msg} See the DirectoryCertChecker.log file for more details.");
+                        Log.Error(msg, ce);
+                    }
                 }
-                catch (COMException ce)
-                {
-                    var msg = $"There was a problem trying to connect to your LDAP server at {server}.";
-                    Console.WriteLine($"{msg} See the DirectoryCertChecker.log file for more details.");
-                    Log.Error(msg, ce);
-                }
+                Console.WriteLine($"{reportWriter.CertsWritten} certs written to the report.");
+                Console.WriteLine($"{reportWriter.ExpiredCerts} EXPIRED certs.");
+                Console.WriteLine($"{reportWriter.ExpiringCerts} EXPIRING certs.");
             }
             catch (ConfigurationErrorsException cee)
             {

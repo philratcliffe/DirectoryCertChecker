@@ -91,9 +91,10 @@ namespace DirectoryCertChecker
                     ExpiredCerts += 1;
                 }
                 else if (daysToExpiry <= _warningPeriodInDays)
-                { 
-                    ExpiringCerts += 1;
+                {
                     record.ExpiryStatus = "EXPIRING";
+                    ExpiringCerts += 1;
+                    
                 }
                 else
                     record.ExpiryStatus = "OK";
