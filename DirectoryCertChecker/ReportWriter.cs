@@ -85,6 +85,7 @@ namespace DirectoryCertChecker
                 record.CertificateDn = cert.Subject;
                 record.SerialNumber = cert.SerialNumber;
                 record.ExpiryDate = cert.NotAfter.ToShortDateString();
+                record.Days = daysToExpiry.ToString();
                 if (cert.NotAfter.ToUniversalTime() < DateTime.UtcNow)
                 { 
                     record.ExpiryStatus = "EXPIRED";
