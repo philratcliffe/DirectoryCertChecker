@@ -21,7 +21,6 @@
 
 using System;
 using System.Configuration;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -48,13 +47,9 @@ namespace DirectoryCertChecker
                 reportWriter.RemoveReportFile();
                 reportWriter.WriteHeader();
 
-                foreach (string baseDn in baseDNs)
-                {
+                foreach (var baseDn in baseDNs)
                     try
                     {
-                        
-
-
                         var directoryCertSearcher = new DirectoryCertSearcher();
                         var searchResultProcessor = new SearchResultProcessor();
 
@@ -68,7 +63,6 @@ namespace DirectoryCertChecker
                             else
                                 Log.Error($"There was a problem getting a certificate for {entryDn}");
                         }
-                
                     }
                     catch (COMException ce)
                     {
@@ -76,7 +70,6 @@ namespace DirectoryCertChecker
                         Console.WriteLine($"{msg} See the DirectoryCertChecker.log file for more details.");
                         Log.Error(msg, ce);
                     }
-                }
                 Console.WriteLine($"{reportWriter.CertsWritten} certs written to the report.");
                 Console.WriteLine($"{reportWriter.ExpiredCerts} EXPIRED certs.");
                 Console.WriteLine($"{reportWriter.ExpiringCerts} EXPIRING certs.");
