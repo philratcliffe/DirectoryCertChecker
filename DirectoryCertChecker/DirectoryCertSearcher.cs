@@ -54,12 +54,7 @@ namespace DirectoryCertChecker
                     // you must set PageSize to a non zero value, preferably 1000, otherwise DirectorySearcher.FindAll() only 
                     // returns the first 1000 records and other entries will be missed without any warning.
                     //
-#if DEBUG
-                    // Just find the first 1000 in debug for now
-                    findCerts.PageSize = 0;
-#else
                     findCerts.PageSize = 1000;
-#endif
 
                     using (var results = findCerts.FindAll())
                     {
