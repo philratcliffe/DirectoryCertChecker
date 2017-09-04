@@ -34,9 +34,9 @@ namespace DirectoryCertChecker
     {
         private const string ReportFilename = @"certificates.csv";
         private readonly int _warningPeriodInDays;
-        public int CertsWritten { get; private set; } = 0;
-        public int ExpiredCerts { get; private set; } = 0;
-        public int ExpiringCerts { get; private set; } = 0;
+        public int CertsWritten { get; private set; }
+        public int ExpiredCerts { get; private set; }
+        public int ExpiringCerts { get; private set; }
 
 
 
