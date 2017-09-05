@@ -1,3 +1,19 @@
 # DirectoryCertChecker
-Searches Active Directory for X.509 certificates. Writes a report in CSV format that details information about each certificate found. Information written to the report includes: EntryDn,CertificateDn,SerialNumber,ExpiryDate,ExpiryStatus,Days Till Expiry. 
+
+## Summary
+Searches Active Directory for X.509 certificates and writes a report in CSV format detailing information about each certificate found. Information written to the report includes: EntryDn, CertificateDn, SerialNumber, ExpiryDate, ExpiryStatus, and Days Till Expiry. 
+
+## Configuration
+The configuration file lets you set the following:
+
+server: The server hosting the directory to be searched.
+
+searchBaseDNs: A list of the DNs to search below
+
+warningPeriodInDays: The number of days before expiration that the expiry status should be changed to EXPIRING
+
+username and password: The LDAP username and password for binding to the LDAP server
+
+
+
 
