@@ -51,6 +51,10 @@ namespace DirectoryCertChecker
             File.Delete(ReportFilename);
         }
 
+        /// <summary>
+        ///     Writes the header line to the CSV report using the CsvHelper
+        ///     library.
+        /// </summary>
         internal void WriteHeader()
         {
             using (TextWriter writer = new StreamWriter(ReportFilename, true))
@@ -61,6 +65,13 @@ namespace DirectoryCertChecker
             }
         }
 
+        /// <summary>
+        ///     Writes a line to the CSV report using the CsvHelper
+        ///     library.
+        /// </summary>
+        ///  /// <param name="record">
+        ///     The record to write.
+        /// </param>
         internal void WriteRecord(ReportRecord record)
         {
             using (TextWriter writer = new StreamWriter(ReportFilename, true))

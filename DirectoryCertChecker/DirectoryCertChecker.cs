@@ -35,6 +35,7 @@ namespace DirectoryCertChecker
         private static void Main()
         {
             const int defaultWarningPeriodInDays = 90;
+
             try
             {
                 Log.Info("DirectoryCertChecker has started.");
