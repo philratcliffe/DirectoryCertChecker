@@ -36,7 +36,7 @@ namespace DirectoryCertChecker
         /// <summary>
         ///     Takes the search result for a specific Active Directory entry and returns the userCertificate 
         ///     attribute value of the entry. If an entry has multiple certificate entries (presumably this is 
-        ///     because old certs are sometimes left in the directory entry), it reurns the one with the most
+        ///     because old certs are sometimes left in the directory entry), it returns the one with the most
         ///     recent expiry date.
         /// </summary>
         /// <param name="result">

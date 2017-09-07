@@ -51,7 +51,7 @@ namespace DirectoryCertChecker
                 foreach (var baseDn in baseDNs)
                     try
                     {
-                        var directoryCertSearcher = new DirectoryCertSearcher();
+                        var directoryCertSearcher = new DirectoryCertificateSearcher();
                         var searchResultProcessor = new SearchResultProcessor();
 
                         foreach (var result in directoryCertSearcher.Search(server, baseDn))

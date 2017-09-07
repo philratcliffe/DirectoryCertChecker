@@ -17,12 +17,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endregion
 
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.DirectoryServices;
 
 namespace DirectoryCertChecker
 {
-    internal class DirectoryCertSearcher
+    internal class DirectoryCertificateSearcher
     {
 
         /// <summary>
@@ -37,6 +38,8 @@ namespace DirectoryCertChecker
         /// </param>
         public IEnumerable<SearchResult> Search(string server, string searchBase)
         {
+            
+
             using (var searchBaseEntry = new DirectoryEntry("LDAP://" + server + "/" + searchBase))
             {
                 searchBaseEntry.AuthenticationType =
@@ -45,8 +48,15 @@ namespace DirectoryCertChecker
                 searchBaseEntry.Password = Config.GetAppSetting("ldapPassword", null);
                 using (var findCerts = new DirectorySearcher(searchBaseEntry))
                 {
+                    // Specify the top of the tree we want to search.
                     findCerts.SearchScope = SearchScope.Subtree;
+
+                    // Specify that only entries with a userCertificate attributee
+                    // should be returned.
                     findCerts.Filter = "(userCertificate=*)";
+
+                    // Specify the attribute to be returned. We are only interested in
+                    // the cert.
                     findCerts.PropertiesToLoad.Add("userCertificate");
 
                     //
