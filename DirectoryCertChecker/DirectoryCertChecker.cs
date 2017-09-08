@@ -24,6 +24,8 @@ using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using log4net;
 
 namespace DirectoryCertChecker
@@ -51,19 +53,7 @@ namespace DirectoryCertChecker
                 foreach (var baseDn in baseDNs)
                     try
                     {
-                        var directoryCertSearcher = new DirectoryCertificateSearcher();
-                        var searchResultProcessor = new SearchResultProcessor();
-
-                        foreach (var result in directoryCertSearcher.Search(server, baseDn))
-                        {
-                            var cert = searchResultProcessor.GetCertificate(result);
-                            var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
-
-                            if (cert != null)
-                                reportWriter.WriteRecord(entryDn, cert);
-                            else
-                                Log.Error($"There was a problem getting a certificate for {entryDn}");
-                        }
+                        ProcessSearchBaseDn(server, baseDn, reportWriter);
                     }
                     catch (COMException ce)
                     {
@@ -80,10 +70,32 @@ namespace DirectoryCertChecker
                 Console.WriteLine($"Error reading the config file - {cee.Message}");
                 Log.Error("Error reading the config file.", cee);
             }
+            // Last chance exception handler
             catch (Exception ex)
             {
                 Console.WriteLine("There was an error. Check the DirectoryCertChecker.log file for more details.");
                 Log.Error("Top level exception caught. ", ex);
+            }
+        }
+
+        private static void ProcessSearchBaseDn(string server, string baseDn, ReportWriter reportWriter)
+        {
+            DirectoryCertificateSearcher directoryCertSearcher = new DirectoryCertificateSearcher();
+            SearchResultProcessor searchResultProcessor = new SearchResultProcessor();
+
+            foreach (var result in directoryCertSearcher.Search(server, baseDn))
+            {
+                string entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
+                try
+                {
+                    X509Certificate2 cert = searchResultProcessor.GetCertificate(result);
+                    reportWriter.WriteRecord(entryDn, cert);
+                }
+                catch (CryptographicException)
+                {
+                    Log.Error($"There was a problem getting a certificate for {entryDn}");
+                }
+                
             }
         }
     }

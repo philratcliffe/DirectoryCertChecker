@@ -47,14 +47,16 @@ namespace DirectoryCertChecker
         {
             var numberOfCerts = result.Properties["UserCertificate"].Count;
             var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
-            var certCount = 0;
-            X509Certificate2 latestCertificate = null;
+            int certCount = 0;
+            DateTime latestExpiryDate = Epoch;
+            X509Certificate2 latestCertificate = new X509Certificate2();
 
+            
             Log.Debug($"{entryDn} has: {numberOfCerts} certs.");
 
             Console.Write($"{entryDn}");
 
-            var latestExpiryDate = Epoch;
+            
 
             var certificatesAsBytes = result.Properties["UserCertificate"];
             foreach (byte[] certificateBytes in certificatesAsBytes)
@@ -72,6 +74,7 @@ namespace DirectoryCertChecker
                 {
                     Console.WriteLine("Error: There was a problem reading a certificate.");
                     Log.Error("There was a problem with reading a certificate.", ce);
+                    throw;
                 }
             if (Epoch >= latestExpiryDate)
             {

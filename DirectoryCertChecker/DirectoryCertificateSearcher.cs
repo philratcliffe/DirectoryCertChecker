@@ -34,7 +34,7 @@ namespace DirectoryCertChecker
         /// </param>
         /// ///
         /// <param name="searchBase">
-        ///     The DN of the entry where you would like the search to begin. An empty string equals root.
+        ///     The DN of the top of the tree we want to the search to begin. An empty string equals root.
         /// </param>
         public IEnumerable<SearchResult> Search(string server, string searchBase)
         {
@@ -48,7 +48,6 @@ namespace DirectoryCertChecker
                 searchBaseEntry.Password = Config.GetAppSetting("ldapPassword", null);
                 using (var findCerts = new DirectorySearcher(searchBaseEntry))
                 {
-                    // Specify the top of the tree we want to search.
                     findCerts.SearchScope = SearchScope.Subtree;
 
                     // Specify that only entries with a userCertificate attributee
