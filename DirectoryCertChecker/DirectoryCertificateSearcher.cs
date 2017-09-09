@@ -17,7 +17,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endregion
 
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.DirectoryServices;
 

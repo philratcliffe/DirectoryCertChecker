@@ -45,6 +45,7 @@ namespace DirectoryCertChecker
                 var server = Config.GetAppSetting("server");
                 var baseDNs = Config.GetListAppSetting("searchBaseDNs");
                 var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriodInDays);
+
                 var reportWriter = new ReportWriter(warningPeriodInDays);
 
                 reportWriter.RemoveReportFile();
