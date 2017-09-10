@@ -74,7 +74,7 @@ namespace DirectoryCertChecker
             return false;
         }
 
-        public static List<string> GetListAppSetting(string key)
+        internal static List<string> GetListAppSetting(string key)
         {
             String value = GetAppSetting(key, "");
             if (!string.IsNullOrEmpty(value))

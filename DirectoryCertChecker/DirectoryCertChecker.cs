@@ -20,6 +20,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
@@ -42,10 +43,9 @@ namespace DirectoryCertChecker
             {
                 Log.Info("DirectoryCertChecker has started.");
 
-                var server = Config.GetAppSetting("server");
-                var baseDNs = Config.GetListAppSetting("searchBaseDNs");
-                var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriodInDays);
-
+                string server = Config.GetAppSetting("server");
+                List<string> baseDNs = Config.GetListAppSetting("searchBaseDNs");
+                int warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriodInDays);
                 var reportWriter = new ReportWriter(warningPeriodInDays);
 
                 reportWriter.RemoveReportFile();
@@ -81,8 +81,8 @@ namespace DirectoryCertChecker
 
         private static void ProcessSearchBaseDn(string server, string baseDn, ReportWriter reportWriter)
         {
-            DirectoryCertificateSearcher directoryCertSearcher = new DirectoryCertificateSearcher();
-            SearchResultProcessor searchResultProcessor = new SearchResultProcessor();
+            var directoryCertSearcher = new DirectoryCertificateSearcher();
+            var searchResultProcessor = new SearchResultProcessor();
 
             foreach (var result in directoryCertSearcher.Search(server, baseDn))
             {
