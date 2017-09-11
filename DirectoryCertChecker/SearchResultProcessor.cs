@@ -43,32 +43,57 @@ namespace DirectoryCertChecker
         ///     The result param encapsulates a node in the Active Directory Domain Services hierarchy
         ///     that is returned during a search using .NET's DirectorySearcher.
         /// </param>
-        public X509Certificate2 GetCertificate(SearchResult result)
+        internal X509Certificate2 GetCertificate(SearchResult result)
         {
             var numberOfCerts = result.Properties["UserCertificate"].Count;
+            if (numberOfCerts == 0)
+            {
+                throw new Exception("There were no certificate found in the result.");
+            }
+
             var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
-            int certCount = 0;
-            DateTime latestExpiryDate = Epoch;
-            X509Certificate2 latestCertificate = new X509Certificate2();
-
-            
             Log.Debug($"{entryDn} has: {numberOfCerts} certs.");
-
             Console.Write($"{entryDn}");
-
             
-
             var certificatesAsBytes = result.Properties["UserCertificate"];
+            
+            X509Certificate2 latestCertificate = GetLatestCertificate(certificatesAsBytes);
+
+            if (Epoch >= latestCertificate.NotAfter)
+            {
+                Console.WriteLine($"Error: Certificate expiry date is invalid: {latestCertificate.NotAfter}");
+                Log.Error($"Epiry date {latestCertificate.NotAfter} is invalid for {result.Path}.");
+            }
+            else
+            {
+                Console.WriteLine($" (Expires: {latestCertificate.NotAfter.ToShortDateString()})");
+            }
+            if (latestCertificate.RawData.Length == 0)
+            {
+                throw new Exception("There was no certificate found in the result.");
+            }
+            return latestCertificate;
+        }
+
+        private static X509Certificate2 GetLatestCertificate(ResultPropertyValueCollection certificatesAsBytes)
+        {
+            if (certificatesAsBytes.Count == 0)
+            {
+                throw new ArgumentException("There were no certificates in the collection passed");
+            }
+            DateTime latestExpiryDate = Epoch;
+            int certCount = 0;
+            X509Certificate2 latestCertificate = new X509Certificate2();
             foreach (byte[] certificateBytes in certificatesAsBytes)
                 try
                 {
                     var certificate = new X509Certificate2(certificateBytes);
-                    var timeDifference = certificate.NotAfter - latestExpiryDate;
+                    TimeSpan timeDifference = certificate.NotAfter - latestExpiryDate;
                     if (timeDifference.TotalMilliseconds > 0)
                         latestExpiryDate = certificate.NotAfter;
                     latestCertificate = certificate;
                     certCount += 1;
-                    Log.Debug($"Expiry: {certificate.NotAfter} ({certCount} of {numberOfCerts} certs processed.)");
+                    Log.Debug($"Expiry: {certificate.NotAfter} ({certCount} certs processed.)");
                 }
                 catch (CryptographicException ce)
                 {
@@ -76,16 +101,8 @@ namespace DirectoryCertChecker
                     Log.Error("There was a problem with reading a certificate.", ce);
                     throw;
                 }
-            if (Epoch >= latestExpiryDate)
-            {
-                Console.WriteLine($"Error: Certificate expiry date is invalid: {latestExpiryDate}");
-                Log.Error($"Epiry date {latestExpiryDate} is invalid for {result.Path}.");
-            }
-            else
-            {
-                Console.WriteLine($" (Expires: {latestExpiryDate.ToShortDateString()})");
-            }
-            return latestCertificate;
+                return latestCertificate;
+
         }
     }
 }
