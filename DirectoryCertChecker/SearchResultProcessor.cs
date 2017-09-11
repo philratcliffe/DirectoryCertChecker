@@ -1,4 +1,5 @@
 ﻿#region Copyright and license information
+
 // Copyright © 2017 Phil Ratcliffe
 // 
 // This file is part of DirectoryCertChecker program.
@@ -15,6 +16,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #endregion
 
 using System;
@@ -34,8 +36,8 @@ namespace DirectoryCertChecker
 
 
         /// <summary>
-        ///     Takes the search result for a specific Active Directory entry and returns the userCertificate 
-        ///     attribute value of the entry. If an entry has multiple certificate entries (presumably this is 
+        ///     Takes the search result for a specific Active Directory entry and returns the userCertificate
+        ///     attribute value of the entry. If an entry has multiple certificate entries (presumably this is
         ///     because old certs are sometimes left in the directory entry), it returns the one with the most
         ///     recent expiry date.
         /// </summary>
@@ -54,10 +56,8 @@ namespace DirectoryCertChecker
             var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
             Log.Debug($"{entryDn} has: {numberOfCerts} certs.");
             Console.Write($"{entryDn}");
-            
-            var certificatesAsBytes = result.Properties["UserCertificate"];
-            
-            X509Certificate2 latestCertificate = GetLatestCertificate(certificatesAsBytes);
+
+            var latestCertificate = GetLatestCertificate(result.Properties["UserCertificate"]);
 
             if (Epoch >= latestCertificate.NotAfter)
             {
@@ -68,6 +68,7 @@ namespace DirectoryCertChecker
             {
                 Console.WriteLine($" (Expires: {latestCertificate.NotAfter.ToShortDateString()})");
             }
+
             if (latestCertificate.RawData.Length == 0)
             {
                 throw new Exception("There was no certificate found in the result.");
@@ -81,16 +82,19 @@ namespace DirectoryCertChecker
             {
                 throw new ArgumentException("There were no certificates in the collection passed");
             }
-            DateTime latestExpiryDate = Epoch;
-            int certCount = 0;
-            X509Certificate2 latestCertificate = new X509Certificate2();
+            var latestExpiryDate = Epoch;
+            var certCount = 0;
+            var latestCertificate = new X509Certificate2();
             foreach (byte[] certificateBytes in certificatesAsBytes)
+            {
                 try
                 {
                     var certificate = new X509Certificate2(certificateBytes);
-                    TimeSpan timeDifference = certificate.NotAfter - latestExpiryDate;
+                    var timeDifference = certificate.NotAfter - latestExpiryDate;
                     if (timeDifference.TotalMilliseconds > 0)
+                    {
                         latestExpiryDate = certificate.NotAfter;
+                    }
                     latestCertificate = certificate;
                     certCount += 1;
                     Log.Debug($"Expiry: {certificate.NotAfter} ({certCount} certs processed.)");
@@ -101,8 +105,8 @@ namespace DirectoryCertChecker
                     Log.Error("There was a problem with reading a certificate.", ce);
                     throw;
                 }
-                return latestCertificate;
-
+            }
+            return latestCertificate;
         }
     }
 }
