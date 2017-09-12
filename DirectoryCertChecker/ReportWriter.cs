@@ -34,16 +34,16 @@ namespace DirectoryCertChecker
     {
         private const string ReportFilename = @"certificates.csv";
         private readonly int _warningPeriodInDays;
-        public int CertsWritten { get; private set; }
-        public int ExpiredCerts { get; private set; }
-        public int ExpiringCerts { get; private set; }
-
 
 
         internal ReportWriter(int warningPeriodInDays)
         {
             _warningPeriodInDays = warningPeriodInDays;
         }
+
+        public int CertsWritten { get; private set; }
+        public int ExpiredCerts { get; private set; }
+        public int ExpiringCerts { get; private set; }
 
         internal void RemoveReportFile()
         {
@@ -69,11 +69,16 @@ namespace DirectoryCertChecker
         ///     Writes a line to the CSV report using the CsvHelper
         ///     library.
         /// </summary>
-        ///  /// <param name="record">
+        /// ///
+        /// <param name="record">
         ///     The record to write.
         /// </param>
         internal void WriteRecord(ReportRecord record)
         {
+            if (record == null)
+            {
+                throw new ArgumentNullException(nameof(record));
+            }
             using (TextWriter writer = new StreamWriter(ReportFilename, true))
             {
                 var csv = new CsvWriter(writer);
@@ -85,37 +90,38 @@ namespace DirectoryCertChecker
 
         internal void WriteRecord(string entryDn, X509Certificate2 cert)
         {
+            if (cert == null)
+            {
+                throw new ArgumentNullException(nameof(cert));
+            }
+
             var record = new ReportRecord
             {
                 EntryDn = entryDn
             };
-            if (cert != null)
+            
+            int daysToExpiry = cert.NotAfter.ToUniversalTime().Subtract(DateTime.UtcNow).Days;
+            record.CertificateDn = cert.Subject;
+            record.SerialNumber = cert.SerialNumber;
+            record.ExpiryDate = cert.NotAfter.ToShortDateString();
+            record.Days = daysToExpiry.ToString();
+            if (cert.NotAfter.ToUniversalTime() < DateTime.UtcNow)
             {
-                var daysToExpiry = cert.NotAfter.ToUniversalTime().Subtract(DateTime.UtcNow).Days;
-                
-                record.CertificateDn = cert.Subject;
-                record.SerialNumber = cert.SerialNumber;
-                record.ExpiryDate = cert.NotAfter.ToShortDateString();
-                record.Days = daysToExpiry.ToString();
-                if (cert.NotAfter.ToUniversalTime() < DateTime.UtcNow)
-                { 
-                    record.ExpiryStatus = "EXPIRED";
-                    ExpiredCerts += 1;
-                }
-                else if (daysToExpiry <= _warningPeriodInDays)
-                {
-                    record.ExpiryStatus = "EXPIRING";
-                    ExpiringCerts += 1;
-                    
-                }
-                else
-                    record.ExpiryStatus = "OK";
+                record.ExpiryStatus = "EXPIRED";
+                ExpiredCerts += 1;
+            }
+            else if (daysToExpiry <= _warningPeriodInDays)
+            {
+                record.ExpiryStatus = "EXPIRING";
+                ExpiringCerts += 1;
+            }
+            else
+            {
+                record.ExpiryStatus = "OK";
             }
 
             WriteRecord(record);
-            if (cert != null)
-                CertsWritten += 1;
-
+            CertsWritten += 1;
         }
     }
 }
