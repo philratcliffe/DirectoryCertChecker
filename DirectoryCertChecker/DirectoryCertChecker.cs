@@ -51,7 +51,7 @@ namespace DirectoryCertChecker
                 reportWriter.RemoveReportFile();
                 reportWriter.WriteHeader();
 
-                foreach (var baseDn in baseDNs)
+                foreach (string baseDn in baseDNs)
                     try
                     {
                         ProcessSearchBaseDn(server, baseDn, reportWriter);
@@ -62,9 +62,8 @@ namespace DirectoryCertChecker
                         Console.WriteLine($"{msg} See the DirectoryCertChecker.log file for more details.");
                         Log.Error(msg, ce);
                     }
-                Console.WriteLine($"{reportWriter.CertsWritten} certs written to the report.");
-                Console.WriteLine($"{reportWriter.ExpiredCerts} EXPIRED certs.");
-                Console.WriteLine($"{reportWriter.ExpiringCerts} EXPIRING certs.");
+                
+                WriteSummaryToConsole(reportWriter);
             }
             catch (ConfigurationErrorsException cee)
             {
@@ -77,6 +76,13 @@ namespace DirectoryCertChecker
                 Console.WriteLine("There was an error. Check the DirectoryCertChecker.log file for more details.");
                 Log.Error("Top level exception caught. ", ex);
             }
+        }
+
+        private static void WriteSummaryToConsole(ReportWriter reportWriter)
+        {
+            Console.WriteLine($"{reportWriter.CertsWritten} certs written to the report.");
+            Console.WriteLine($"{reportWriter.ExpiredCerts} EXPIRED certs.");
+            Console.WriteLine($"{reportWriter.ExpiringCerts} EXPIRING certs.");
         }
 
         private static void ProcessSearchBaseDn(string server, string baseDn, ReportWriter reportWriter)
