@@ -35,7 +35,6 @@ namespace DirectoryCertChecker
         private const string ReportFilename = @"certificates.csv";
         private readonly int _warningPeriodInDays;
 
-
         internal ReportWriter(int warningPeriodInDays)
         {
             _warningPeriodInDays = warningPeriodInDays;
@@ -66,41 +65,27 @@ namespace DirectoryCertChecker
         }
 
         /// <summary>
-        ///     Writes a line to the CSV report using the CsvHelper
-        ///     library.
+        ///     Writes a record to the CSV report using the private WriteRecord method.
         /// </summary>
         /// ///
-        /// <param name="record">
-        ///     The record to write.
+        /// <param name="entryDn">
+        ///     The distinguished name of the record to write.
         /// </param>
-        internal void WriteRecord(ReportRecord record)
-        {
-            if (record == null)
-            {
-                throw new ArgumentNullException(nameof(record));
-            }
-            using (TextWriter writer = new StreamWriter(ReportFilename, true))
-            {
-                var csv = new CsvWriter(writer);
-                csv.Configuration.Encoding = Encoding.UTF8;
-                csv.WriteRecord(record);
-            }
-        }
-
-
+        /// ///
+        /// <param name="cert">
+        ///     A certificate represented in an X509Certificate2 object .
+        /// </param>
         internal void WriteRecord(string entryDn, X509Certificate2 cert)
         {
             if (cert == null)
             {
                 throw new ArgumentNullException(nameof(cert));
             }
-
             var record = new ReportRecord
             {
                 EntryDn = entryDn
             };
-            
-            int daysToExpiry = cert.NotAfter.ToUniversalTime().Subtract(DateTime.UtcNow).Days;
+            var daysToExpiry = cert.NotAfter.ToUniversalTime().Subtract(DateTime.UtcNow).Days;
             record.CertificateDn = cert.Subject;
             record.SerialNumber = cert.SerialNumber;
             record.ExpiryDate = cert.NotAfter.ToShortDateString();
@@ -119,9 +104,29 @@ namespace DirectoryCertChecker
             {
                 record.ExpiryStatus = "OK";
             }
-
             WriteRecord(record);
             CertsWritten += 1;
+        }
+
+        /// <summary>
+        ///     Writes a line to the CSV report using the CsvHelper
+        ///     library.
+        /// </summary>
+        /// <param name="record">
+        ///     The record to write.
+        /// </param>
+        private void WriteRecord(ReportRecord record)
+        {
+            if (record == null)
+            {
+                throw new ArgumentNullException(nameof(record));
+            }
+            using (TextWriter writer = new StreamWriter(ReportFilename, true))
+            {
+                var csv = new CsvWriter(writer);
+                csv.Configuration.Encoding = Encoding.UTF8;
+                csv.WriteRecord(record);
+            }
         }
     }
 }
