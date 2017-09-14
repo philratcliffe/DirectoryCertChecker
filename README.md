@@ -6,13 +6,13 @@ Searches Active Directory for X.509 certificates and writes a report in CSV form
 ## Configuration
 The configuration file lets you set the following:
 
-server: The server hosting the directory to be searched.
+* server: The server hosting the directory to be searched.
 
-searchBaseDNs: A list of the DNs to search below
+* searchBaseDNs: A list of the DNs to search below
 
-warningPeriodInDays: The number of days before expiration that the expiry status should be changed to EXPIRING
+* warningPeriodInDays: The number of days before expiration that the expiry status should be changed to EXPIRING
 
-username and password: The LDAP username and password for binding to the LDAP server
+* username and password: The LDAP username and password for binding to the LDAP server
 
 
 
