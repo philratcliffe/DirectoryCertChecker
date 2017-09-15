@@ -20,6 +20,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.DirectoryServices;
 using System.Linq;
 using System.Reflection;
@@ -76,12 +77,18 @@ namespace DirectoryCertChecker
             return latestCertificate;
         }
 
-        private static X509Certificate2 GetLatestCertificate(ResultPropertyValueCollection certificatesAsBytes)
+        private static X509Certificate2 GetLatestCertificate(ICollection certificatesAsBytes)
         {
+            if (certificatesAsBytes == null)
+            {
+                throw new ArgumentNullException(nameof(certificatesAsBytes));
+            }
+
             if (certificatesAsBytes.Count == 0)
             {
-                throw new ArgumentException("There were no certificates in the collection passed");
+                throw new ArgumentException("There were no certificates in the collection passed.");
             }
+            
             var latestExpiryDate = Epoch;
             var certCount = 0;
             var latestCertificate = new X509Certificate2();
