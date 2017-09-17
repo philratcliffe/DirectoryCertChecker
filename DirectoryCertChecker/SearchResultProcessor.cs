@@ -35,7 +35,6 @@ namespace DirectoryCertChecker
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-
         /// <summary>
         ///     Takes the search result for a specific Active Directory entry and returns the userCertificate
         ///     attribute value of the entry. If an entry has multiple certificate entries (presumably this is
@@ -51,7 +50,7 @@ namespace DirectoryCertChecker
             var numberOfCerts = result.Properties["UserCertificate"].Count;
             if (numberOfCerts == 0)
             {
-                throw new Exception("There were no certificate found in the result.");
+                throw new Exception("There were no certificates found in the result.");
             }
 
             var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
@@ -88,7 +87,7 @@ namespace DirectoryCertChecker
             {
                 throw new ArgumentException("There were no certificates in the collection passed.");
             }
-            
+
             var latestExpiryDate = Epoch;
             var certCount = 0;
             var latestCertificate = new X509Certificate2();
