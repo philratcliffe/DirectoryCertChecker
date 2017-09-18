@@ -38,7 +38,6 @@ namespace DirectoryCertChecker
         public IEnumerable<SearchResult> Search(string server, string searchBase)
         {
             
-
             using (var searchBaseEntry = new DirectoryEntry("LDAP://" + server + "/" + searchBase))
             {
                 searchBaseEntry.AuthenticationType =
@@ -62,7 +61,8 @@ namespace DirectoryCertChecker
                     // you must set PageSize to a non zero value, preferably 1000, otherwise DirectorySearcher.FindAll() only 
                     // returns the first 1000 records and other entries will be missed without any warning.
                     //
-                    findCerts.PageSize = 1000;
+                    const int necessaryPageSize = 1000;
+                    findCerts.PageSize = necessaryPageSize;
 
                     using (var results = findCerts.FindAll())
                     {
