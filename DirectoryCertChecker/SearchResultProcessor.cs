@@ -76,14 +76,23 @@ namespace DirectoryCertChecker
             return latestCertificate;
         }
 
-        private static X509Certificate2 GetLatestCertificate(ICollection certificatesAsBytes)
+        /// <summary>
+        /// Loop through the certificates provided and return the one with the latest expiry
+        /// date. Often there will only be one certificate in the list.
+        /// </summary>
+        /// <param name="userCertificates">
+        /// Should be one or more user certificates.
+        /// </param>
+        /// 
+        /// <returns></returns>
+        private static X509Certificate2 GetLatestCertificate(ICollection userCertificates)
         {
-            if (certificatesAsBytes == null)
+            if (userCertificates == null)
             {
-                throw new ArgumentNullException(nameof(certificatesAsBytes));
+                throw new ArgumentNullException(nameof(userCertificates));
             }
 
-            if (certificatesAsBytes.Count == 0)
+            if (userCertificates.Count == 0)
             {
                 throw new ArgumentException("There were no certificates in the collection passed.");
             }
@@ -91,7 +100,7 @@ namespace DirectoryCertChecker
             var latestExpiryDate = Epoch;
             var certCount = 0;
             var latestCertificate = new X509Certificate2();
-            foreach (byte[] certificateBytes in certificatesAsBytes)
+            foreach (byte[] certificateBytes in userCertificates)
             {
                 try
                 {

@@ -33,7 +33,7 @@ namespace DirectoryCertChecker
         /// </param>
         /// ///
         /// <param name="searchBase">
-        ///     The DN of the top of the tree we want to the search to begin. An empty string equals root.
+        ///     The DN of the top of the tree we want the search to begin. An empty string equals root.
         /// </param>
         public IEnumerable<SearchResult> Search(string server, string searchBase)
         {
