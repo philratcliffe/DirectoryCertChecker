@@ -53,7 +53,7 @@ namespace DirectoryCertChecker
                     findCerts.Filter = "(userCertificate=*)";
 
                     // Specify the attribute to be returned. We are only interested in
-                    // the cert.
+                    // the certificate.
                     findCerts.PropertiesToLoad.Add("userCertificate");
 
                     //

@@ -20,13 +20,11 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using log4net;
 
 namespace DirectoryCertChecker
@@ -42,18 +40,20 @@ namespace DirectoryCertChecker
             try
             {
                 Log.Info("DirectoryCertChecker has started.");
+                
+                var baseDNs = Config.GetListAppSetting("searchBaseDNs");
+                var warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriodInDays);
 
-                string server = Config.GetAppSetting("server");
-                List<string> baseDNs = Config.GetListAppSetting("searchBaseDNs");
-                int warningPeriodInDays = Config.GetIntAppSetting("warningPeriodInDays", defaultWarningPeriodInDays);
                 var reportWriter = new ReportWriter(warningPeriodInDays);
-
                 reportWriter.RemoveReportFile();
                 reportWriter.WriteHeader();
 
-                foreach (string baseDn in baseDNs)
+                var server = Config.GetAppSetting("server");
+                foreach (var baseDn in baseDNs)
+                {
                     try
                     {
+                        
                         ProcessSearchBaseDn(server, baseDn, reportWriter);
                     }
                     catch (COMException ce)
@@ -62,7 +62,8 @@ namespace DirectoryCertChecker
                         Console.WriteLine($"{msg} See the DirectoryCertChecker.log file for more details.");
                         Log.Error(msg, ce);
                     }
-                
+                }
+
                 WriteSummaryToConsole(reportWriter);
             }
             catch (ConfigurationErrorsException cee)
@@ -92,17 +93,16 @@ namespace DirectoryCertChecker
 
             foreach (var result in directoryCertSearcher.Search(server, baseDn))
             {
-                string entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
+                var entryDn = Uri.UnescapeDataString(new Uri(result.Path).Segments.Last());
                 try
                 {
-                    X509Certificate2 cert = searchResultProcessor.GetCertificate(result);
+                    var cert = searchResultProcessor.GetCertificate(result);
                     reportWriter.WriteRecord(entryDn, cert);
                 }
                 catch (CryptographicException)
                 {
                     Log.Error($"There was a problem getting a certificate for {entryDn}");
                 }
-                
             }
         }
     }
