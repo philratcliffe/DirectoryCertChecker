@@ -73,7 +73,7 @@ namespace DirectoryCertChecker
         /// </param>
         /// ///
         /// <param name="cert">
-        ///     A certificate represented in an X509Certificate2 object .
+        ///     A certificate represented in an X509Certificate2 object.
         /// </param>
         internal void WriteRecord(string entryDn, X509Certificate2 cert)
         {
