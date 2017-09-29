@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Mail;
-using System.Net.Mime;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using log4net;
 
 namespace DirectoryCertChecker
@@ -23,7 +19,7 @@ namespace DirectoryCertChecker
 
         internal static void SendEmail(string subject, string message, MailPriority pri)
         {
-            List<string> recips = Config.GetListAppSetting("MailTo");
+            var recips = Config.GetListAppSetting("MailTo");
             SendEmail(subject, message, recips, pri);
         }
 
@@ -43,10 +39,10 @@ namespace DirectoryCertChecker
         {
             using (var mail = new MailMessage())
             {
-                string fromEmailAddress = Config.GetAppSetting("ConfigMailFrom", "dircertchecker@noreply.erehwon.com");
-                string fromDisplayName = Config.GetAppSetting("ConfigMailFromDisplayName", "DirCertChecker Notifications");
+                var fromEmailAddress = Config.GetAppSetting("MailFrom", "directorycertchecker@noreply.erehwon.com");
+                var fromDisplayName = Config.GetAppSetting("MailFromDisplayName", "Directory Cert Checker Notifications");
                 mail.From = new MailAddress(fromEmailAddress, fromDisplayName);
-                foreach (string recip in recips)
+                foreach (var recip in recips)
                 {
                     mail.To.Add(recip);
                 }
@@ -58,34 +54,11 @@ namespace DirectoryCertChecker
                 var strEmailBody = new StringBuilder();
 
                 strEmailBody.AppendLine(message);
-                //strEmailBody.AppendLine();
-                //strEmailBody.AppendLine(DateTime.Now.ToUniversalTime().ToString("r", DateTimeFormatInfo.InvariantInfo));
 
                 mail.Body = strEmailBody.ToString();
-                if (csvReportFilename != null)
-                {
-                    Log.Debug("Attaching: " + csvReportFilename);
-                    if (!File.Exists(csvReportFilename))
-                    {
-                        Log.Error("Unable to attach report: " + csvReportFilename);
-                    }
-                    var data = new Attachment(csvReportFilename, MediaTypeNames.Application.Octet);
-                    mail.Attachments.Add(data);
-                }
-                if (pdfReportFilename != null)
-                {
-                    Log.Debug("Attaching: " + pdfReportFilename);
-                    if (!File.Exists(pdfReportFilename))
-                    {
-                        Log.Error("Unable to attach report: " + pdfReportFilename);
-                    }
-                    var data = new Attachment(pdfReportFilename, MediaTypeNames.Application.Pdf);
-                    //message.Attachments.Add(new Attachment(@"c:\pdftoattach.pdf"));
-                    mail.Attachments.Add(data);
-                }
 
-                SmtpClient client = GetSmtpClient();
-                //var client = new SmtpClient(Config.GetAppSetting(Constants.ConfigSmtpHost));
+                var client = GetSmtpClient();
+
                 client.Send(mail);
                 Log.Debug("Sent email: " + subject);
             }
@@ -94,13 +67,13 @@ namespace DirectoryCertChecker
         private static SmtpClient GetSmtpClient()
         {
             SmtpClient smtpClient;
-            string smtpPort = Config.GetAppSetting(Constants.ConfigSmtpPort, "");
-            string smtpServer = Config.GetAppSetting(Constants.ConfigSmtpServer);
+            var smtpPort = Config.GetAppSetting("SmtpPort", "25");
+            var smtpServer = Config.GetAppSetting("SmtpServer");
             if (!string.IsNullOrEmpty(smtpPort))
             {
                 try
                 {
-                    int port = int.Parse(smtpPort);
+                    var port = int.Parse(smtpPort);
                     smtpClient = new SmtpClient(smtpServer, port);
                 }
                 catch
@@ -113,48 +86,19 @@ namespace DirectoryCertChecker
                 smtpClient = new SmtpClient(smtpServer);
             }
 
-            if (Config.GetBoolAppSetting(Constants.ConfigSmtpUseSsl))
+            if (Config.GetBoolAppSetting("SmtpUseSsl"))
             {
                 smtpClient.EnableSsl = true;
             }
 
-            if (Config.GetBoolAppSetting(Constants.ConfigSmtpRequiresAuthentication))
+            if (Config.GetBoolAppSetting("SmtpRequiresAuthentication"))
             {
-                string smtpUser = Config.GetAppSetting(Constants.ConfigSmtpUser);
-                string smtpPassword = Config.GetAppSetting(Constants.ConfigSmtpPassword);
+                var smtpUser = Config.GetAppSetting("SmtpUser");
+                var smtpPassword = Config.GetAppSetting("SmtpPassword");
                 smtpClient.Credentials = new NetworkCredential(smtpUser, smtpPassword);
             }
 
             return smtpClient;
-        }
-
-        internal static void SendEmailAlert(Server s, string subject)
-        {
-            List<string> recips = Config.GetAlertEmailRecips();
-
-            string emailSubject = subject + " " + s.Hostname + ":" + s.Port;
-            string emailBody = MessageFormatter.FormatLineForEmail(s);
-            var pri = MailPriority.High;
-            SendEmail(emailSubject, emailBody, recips, pri);
-        }
-
-        internal static void SendConnectionErrorEmailAlert(Server s)
-        {
-            Log.Debug("SendConnectionErrorEmailAlert Exit");
-            string emailSubject = Constants.MsgCertCheckerError + " " + s.Hostname;
-            string emailBody = Environment.NewLine + Environment.NewLine;
-            emailBody += s.ShortErrorMsg;
-            SendEmail(emailSubject, emailBody);
-            Log.Debug("Back from EmailUtils.SendEmail");
-            Log.Debug("SendConnectionErrorEmailAlert Exit");
-        }
-
-        internal static void EmailReport(string emailText, string csvReportFilename, string pdfReportFilename)
-        {
-            List<string> recips = Config.GetListAppSetting(Constants.ConfigMailTo);
-            string emailSubject = "Red Kestrel CertAlert: " + Constants.MsgCertCheckerReport;
-            var pri = MailPriority.High;
-            SendEmail(emailSubject, emailText, recips, pri, csvReportFilename, pdfReportFilename);
         }
     }
 }
