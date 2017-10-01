@@ -27,6 +27,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using log4net;
 
+
 namespace DirectoryCertChecker
 {
     internal class DirectoryCertChecker
@@ -65,6 +66,8 @@ namespace DirectoryCertChecker
                 }
 
                 WriteSummaryToConsole(reportWriter);
+                
+                
             }
             catch (ConfigurationErrorsException cee)
             {

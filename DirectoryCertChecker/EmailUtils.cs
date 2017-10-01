@@ -31,11 +31,11 @@ namespace DirectoryCertChecker
 
         internal static void SendEmail(string subject, string message, List<string> recips, MailPriority pri)
         {
-            SendEmail(subject, message, recips, pri, null, null);
+            SendEmail(subject, message, recips, pri, null);
         }
 
         internal static void SendEmail(string subject, string message, List<string> recips, MailPriority pri,
-            string csvReportFilename, string pdfReportFilename)
+            string csvReportFilename)
         {
             using (var mail = new MailMessage())
             {
@@ -62,6 +62,14 @@ namespace DirectoryCertChecker
                 client.Send(mail);
                 Log.Debug("Sent email: " + subject);
             }
+        }
+
+        internal static void EmailReport(string emailText, string csvReportFilename)
+        {
+            List<string> recips = Config.GetListAppSetting("MailTo");
+            string emailSubject = "Directory Cert Checker";
+            var pri = MailPriority.High;
+            SendEmail(emailSubject, emailText, recips, pri, csvReportFilename);
         }
 
         private static SmtpClient GetSmtpClient()
