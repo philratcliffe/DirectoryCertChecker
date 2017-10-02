@@ -32,17 +32,19 @@ namespace DirectoryCertChecker
     /// </summary>
     internal class ReportWriter
     {
-        private const string ReportFilename = @"certificates.csv";
         private readonly int _warningPeriodInDays;
 
         internal ReportWriter(int warningPeriodInDays)
         {
             _warningPeriodInDays = warningPeriodInDays;
+            ReportFilename = @"certificates.csv";
         }
 
         public int CertsWritten { get; private set; }
         public int ExpiredCerts { get; private set; }
         public int ExpiringCerts { get; private set; }
+        public string ReportFilename { get; private set; }
+        
 
         internal void RemoveReportFile()
         {

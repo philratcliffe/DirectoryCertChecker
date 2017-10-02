@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 using log4net;
@@ -56,6 +58,16 @@ namespace DirectoryCertChecker
                 strEmailBody.AppendLine(message);
 
                 mail.Body = strEmailBody.ToString();
+                if (csvReportFilename != null)
+                {
+                    Log.Debug("Attaching: " + csvReportFilename);
+                    if (!File.Exists(csvReportFilename))
+                    {
+                        Log.Error("Unable to attach report: " + csvReportFilename);
+                    }
+                    var data = new Attachment(csvReportFilename, MediaTypeNames.Application.Octet);
+                    mail.Attachments.Add(data);
+                }
 
                 var client = GetSmtpClient();
 

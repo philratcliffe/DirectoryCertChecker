@@ -66,8 +66,9 @@ namespace DirectoryCertChecker
                 }
 
                 WriteSummaryToConsole(reportWriter);
-                
-                
+                EmailUtils.EmailReport("Directory Cert Checker Report", reportWriter.ReportFilename);
+
+
             }
             catch (ConfigurationErrorsException cee)
             {
