@@ -41,8 +41,8 @@ namespace DirectoryCertChecker
         {
             using (var mail = new MailMessage())
             {
-                var fromEmailAddress = Config.GetAppSetting("MailFrom", "directorycertchecker@noreply.erehwon.com");
-                var fromDisplayName = Config.GetAppSetting("MailFromDisplayName", "Directory Cert Checker Notifications");
+                var fromEmailAddress = Config.GetAppSetting("MailFrom", "noreply@directorycertchecker.info");
+                var fromDisplayName = Config.GetAppSetting("MailFromDisplayName", "Directory Cert Checker");
                 mail.From = new MailAddress(fromEmailAddress, fromDisplayName);
                 foreach (var recip in recips)
                 {
@@ -78,8 +78,8 @@ namespace DirectoryCertChecker
 
         internal static void EmailReport(string emailText, string csvReportFilename)
         {
-            List<string> recips = Config.GetListAppSetting("MailTo");
-            string emailSubject = "Directory Cert Checker";
+            var recips = Config.GetListAppSetting("MailTo");
+            var emailSubject = "Directory Cert Checker Report";
             var pri = MailPriority.High;
             SendEmail(emailSubject, emailText, recips, pri, csvReportFilename);
         }

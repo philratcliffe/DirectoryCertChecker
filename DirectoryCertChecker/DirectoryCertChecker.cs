@@ -66,7 +66,10 @@ namespace DirectoryCertChecker
                 }
 
                 WriteSummaryToConsole(reportWriter);
-                EmailUtils.EmailReport("Directory Cert Checker Report", reportWriter.ReportFilename);
+                if (Config.GetBoolAppSetting("EmailReports"))
+                { 
+                    EmailUtils.EmailReport("Directory Cert Checker Report", reportWriter.ReportFilename);
+                }
 
 
             }
