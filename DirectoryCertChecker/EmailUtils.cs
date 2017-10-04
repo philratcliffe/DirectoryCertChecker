@@ -9,8 +9,14 @@ using log4net;
 
 namespace DirectoryCertChecker
 {
+
+    
     internal class EmailUtils
     {
+        /// <summary>
+        ///     Provides a set of methods for sending emails.
+        /// </summary>
+        
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         internal static void SendEmail(string subject, string message)
