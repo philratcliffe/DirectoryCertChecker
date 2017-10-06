@@ -14,6 +14,12 @@ The configuration file lets you set the following:
 
 * username and password: The LDAP username and password for binding to the LDAP server
 
+* email recipients: you can email the report out if you wish
+
+* email configuration: SMTP server, port etc
+
+
+
 
 
 
